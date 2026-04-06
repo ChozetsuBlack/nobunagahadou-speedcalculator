@@ -67,7 +67,81 @@ input {
   position: relative;
   width: min(1280px, calc(100% - 32px));
   margin: 0 auto;
-  padding: 28px 0 56px;
+  padding: 28px 0 132px;
+}
+
+.result-dock {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 50;
+  display: grid;
+  gap: 14px;
+  width: min(420px, calc(100vw - 24px));
+  padding: 18px 18px 16px;
+  border-radius: 24px;
+  backdrop-filter: blur(18px);
+  background:
+    radial-gradient(circle at top right, rgba(89, 195, 255, 0.18), transparent 28%),
+    linear-gradient(180deg, rgba(16, 25, 43, 0.94), rgba(12, 18, 31, 0.98));
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.36);
+}
+
+.result-dock__main,
+.result-dock__meta,
+.result-dock__metric {
+  display: flex;
+  align-items: center;
+}
+
+.result-dock__main,
+.result-dock__meta {
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.result-dock__label {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.result-dock__value {
+  font-size: clamp(2.1rem, 5vw, 2.8rem);
+  font-weight: 900;
+  letter-spacing: -0.05em;
+  line-height: 0.95;
+  white-space: nowrap;
+}
+
+.result-dock__value small {
+  margin-left: 0.22em;
+  font-size: 0.36em;
+  color: var(--muted);
+}
+
+.result-dock__meta {
+  gap: 10px;
+}
+
+.result-dock__metric {
+  flex: 1;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(49, 71, 111, 0.9);
+  background: rgba(13, 19, 33, 0.84);
+}
+
+.result-dock__metric span {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.result-dock__metric strong {
+  font-size: 0.98rem;
 }
 
 .panel-surface {
@@ -623,6 +697,7 @@ input[type="range"]::-moz-range-thumb {
   .app-shell {
     width: min(100% - 20px, 1280px);
     padding-top: 18px;
+    padding-bottom: 168px;
   }
 
   .hero-copy,
@@ -691,5 +766,25 @@ input[type="range"]::-moz-range-thumb {
 
   .site-copyright {
     text-align: center;
+  }
+
+  .result-dock {
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    width: auto;
+    gap: 10px;
+    padding: 14px;
+    border-radius: 20px;
+  }
+
+  .result-dock__main,
+  .result-dock__meta {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .result-dock__value {
+    font-size: clamp(2rem, 10vw, 2.8rem);
   }
 }

@@ -7,6 +7,27 @@
   <link rel="stylesheet" href="./style.css">
 </head>
 <body>
+  <div class="result-dock panel-surface" id="resultDock" aria-live="polite">
+    <div class="result-dock__main">
+      <p class="result-dock__label">発動時間</p>
+      <div class="result-dock__value"><span id="resultDockValue">0.00</span><small>秒</small></div>
+    </div>
+    <div class="result-dock__meta">
+      <div class="result-dock__metric">
+        <span>ゲージ</span>
+        <strong id="resultDockGauge">0%</strong>
+      </div>
+      <div class="result-dock__metric">
+        <span>常時速度</span>
+        <strong id="resultDockSpeed">0%</strong>
+      </div>
+      <div class="result-dock__metric">
+        <span>状態変化</span>
+        <strong id="resultDockStatus">0%</strong>
+      </div>
+    </div>
+  </div>
+
   <main class="app-shell">
     <section class="hero">
       <article class="hero-copy panel-surface">
@@ -255,9 +276,6 @@
           </div>
           <div class="preset-grid">
             <button type="button" class="preset-button" data-preset="default">初期状態</button>
-            <button type="button" class="preset-button" data-preset="fast25">25秒最速寄せ</button>
-            <button type="button" class="preset-button" data-preset="balanced30">30秒バランス</button>
-            <button type="button" class="preset-button" data-preset="debuff35">35秒デバフ検証</button>
           </div>
         </section>
 

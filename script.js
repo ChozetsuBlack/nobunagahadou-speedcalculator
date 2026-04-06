@@ -33,12 +33,10 @@ const orderedKeys = [
 ];
 
 const formulaText = "((interval*(100-(baseGauge+boiTaisho+boiFukusho+kongo+bouga+building+shinki))/100)-(statusDuration*(100+baseSpeed+statusSpeed)/100))/((100+baseSpeed)/100)+statusDuration";
+const minimumDisplayedTestCaseSeconds = 19;
 
 const presets = {
-  default: { baseGauge: 0, interval: 35, kiryaku: 0, shinsan: 0, kanpa: 0, jinsoku: 0, sairyaku: 0, reiken: 0, ichinen: 0, buretsu: 0, fubu: 0, kanata: 0, sokkou: 0, kenbatsu: 0, sensokukashin: 0, statusUp: 0, statusDown: 0, statusDuration: 0, bouga: 0, kongo: 0, boiTaisho: 0, boiFukusho: 0, building: 0, shinki: 0 },
-  fast25: { baseGauge: 30, interval: 25, kiryaku: 15, shinsan: 20, kanpa: 10, jinsoku: 10, sairyaku: 10, reiken: 15, ichinen: 10, buretsu: 10, fubu: 5, kanata: 10, sokkou: 10, kenbatsu: 10, sensokukashin: 10, statusUp: 20, statusDown: 0, statusDuration: 10, bouga: 20, kongo: 15, boiTaisho: 21, boiFukusho: 7, building: 20, shinki: 20 },
-  balanced30: { baseGauge: 12, interval: 30, kiryaku: 8, shinsan: 20, kanpa: 10, jinsoku: 10, sairyaku: 0, reiken: 15, ichinen: 10, buretsu: 0, fubu: 5, kanata: 0, sokkou: 6, kenbatsu: 10, sensokukashin: 0, statusUp: 10, statusDown: 0, statusDuration: 7, bouga: 20, kongo: 9, boiTaisho: 12, boiFukusho: 4, building: 15, shinki: 0 },
-  debuff35: { baseGauge: 5, interval: 35, kiryaku: 5, shinsan: 20, kanpa: 0, jinsoku: 10, sairyaku: 0, reiken: 15, ichinen: 0, buretsu: 10, fubu: 0, kanata: 10, sokkou: 3, kenbatsu: 0, sensokukashin: 10, statusUp: 0, statusDown: -15, statusDuration: 12, bouga: 20, kongo: 3, boiTaisho: 12, boiFukusho: 4, building: 10, shinki: 0 }
+  default: { baseGauge: 0, interval: 35, kiryaku: 0, shinsan: 0, kanpa: 0, jinsoku: 0, sairyaku: 0, reiken: 0, ichinen: 0, buretsu: 0, fubu: 0, kanata: 0, sokkou: 0, kenbatsu: 0, sensokukashin: 0, statusUp: 0, statusDown: 0, statusDuration: 0, bouga: 0, kongo: 0, boiTaisho: 0, boiFukusho: 0, building: 0, shinki: 0 }
 };
 
 const testCases = [
@@ -172,8 +170,9 @@ function parseStateFromUrl() {
 
 function renderTestCases() {
   const body = document.getElementById("testCaseTableBody");
+  const visibleTestCases = testCases.filter((testCase) => calculateActivationTime(testCase.values).result >= minimumDisplayedTestCaseSeconds);
 
-  body.innerHTML = testCases.map((testCase) => {
+  body.innerHTML = visibleTestCases.map((testCase) => {
     const metrics = calculateActivationTime(testCase.values);
     return `
       <tr>
@@ -187,7 +186,7 @@ function renderTestCases() {
 
   body.querySelectorAll(".case-button").forEach((button) => {
     button.addEventListener("click", () => {
-      const selected = testCases.find((testCase) => testCase.id === button.dataset.caseId);
+      const selected = visibleTestCases.find((testCase) => testCase.id === button.dataset.caseId);
       if (selected) {
         applyState(selected.values);
       }
@@ -224,9 +223,13 @@ function render() {
   document.querySelector('[data-range-output="statusDuration"]').textContent = String(state.statusDuration);
 
   document.getElementById("resultValue").textContent = Number.isFinite(result) ? result.toFixed(2) : "0.00";
+  document.getElementById("resultDockValue").textContent = Number.isFinite(result) ? result.toFixed(2) : "0.00";
   document.getElementById("gaugeTotal").textContent = `${gaugeTotal}%`;
+  document.getElementById("resultDockGauge").textContent = `${gaugeTotal}%`;
   document.getElementById("speedTotal").textContent = `${baseSpeedTotal}%`;
+  document.getElementById("resultDockSpeed").textContent = `${baseSpeedTotal}%`;
   document.getElementById("statusTotal").textContent = `${statusSpeedTotal}%`;
+  document.getElementById("resultDockStatus").textContent = `${statusSpeedTotal}%`;
   document.getElementById("intervalValue").textContent = `${state.interval}秒`;
 
   document.getElementById("sidebarGauge").textContent = `${gaugeTotal}%`;
