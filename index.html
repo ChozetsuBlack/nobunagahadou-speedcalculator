@@ -1,0 +1,336 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>戦法スピード計算機 再現版</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <main class="app-shell">
+    <section class="hero">
+      <article class="hero-copy panel-surface">
+        <p class="eyebrow">TACTICAL SPEED ANALYZER</p>
+        <h1>戦法スピード計算機</h1>
+        <p class="hero-lead">
+          発動時間を即時に比較できる最適化ツール。補正の重なり方と到達秒数を、攻略目線で素早く確認できます。
+        </p>
+        <div class="hero-points">
+          <span>即時計算</span>
+          <span>共有URL対応</span>
+          <span>テストケース反映</span>
+        </div>
+      </article>
+
+      <aside class="result-card panel-surface" id="resultCard">
+        <div class="result-head">
+          <div>
+            <p class="result-kicker">Final Trigger Time</p>
+            <h2 class="result-title">発動時間</h2>
+          </div>
+          <span class="result-chip">LIVE</span>
+        </div>
+
+        <div class="result-mainline">
+          <div class="result-value"><span id="resultValue">0.00</span><small>秒</small></div>
+          <p class="result-caption">
+            現在の入力条件から算出した最終到達時間です。
+          </p>
+        </div>
+
+        <div class="result-metrics">
+          <div class="metric-card">
+            <span>合計ゲージ加算</span>
+            <strong id="gaugeTotal">0%</strong>
+          </div>
+          <div class="metric-card">
+            <span>常時速度補正</span>
+            <strong id="speedTotal">0%</strong>
+          </div>
+          <div class="metric-card metric-card--conditional">
+            <span>状態変化補正</span>
+            <strong id="statusTotal">0%</strong>
+          </div>
+          <div class="metric-card">
+            <span>基本戦法間隔</span>
+            <strong id="intervalValue">0秒</strong>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="layout">
+      <section class="main-panel panel-surface">
+        <div class="panel-heading">
+          <div>
+            <p class="section-kicker">Input Console</p>
+            <h2 class="section-title">条件設定</h2>
+          </div>
+        </div>
+
+        <div class="group group--primary">
+          <div class="group-header">
+            <h3 class="group-title">基本情報</h3>
+            <p class="group-note">まずは基本戦法間隔と基礎ゲージ補正を設定します。</p>
+          </div>
+          <div class="field-grid">
+            <section class="field field--priority">
+              <div class="field-header">
+                <h4 class="field-title">勇士…母衣兵科レベル（上限30%）</h4>
+                <span class="field-hint">%</span>
+              </div>
+              <div class="slider-wrap">
+                <div class="slider-meta"><span class="slider-output"><span data-range-output="baseGauge">0</span>%</span></div>
+                <input id="baseGauge" type="range" min="0" max="30" step="1" value="0">
+              </div>
+            </section>
+
+            <section class="field field--priority">
+              <div class="field-header">
+                <h4 class="field-title">戦法発動間隔</h4>
+                <span class="field-hint">秒</span>
+              </div>
+              <div class="choice-list">
+                <label class="choice"><input type="radio" name="interval" value="35"><span>35秒</span></label>
+                <label class="choice"><input type="radio" name="interval" value="30"><span>30秒</span></label>
+                <label class="choice"><input type="radio" name="interval" value="25"><span>25秒</span></label>
+              </div>
+            </section>
+          </div>
+        </div>
+
+        <div class="group">
+          <div class="group-header">
+            <h3 class="group-title">発動速度増加系</h3>
+            <p class="group-note">常時速度補正と持続時間つきの状態変化をまとめて設定します。</p>
+          </div>
+          <div class="field-grid">
+            <section class="field">
+              <div class="field-header"><h4 class="field-title">機略</h4></div>
+              <div class="choice-list">
+                <label class="choice"><input type="radio" name="kiryaku" value="0" checked><span>なし</span></label>
+                <label class="choice"><input type="radio" name="kiryaku" value="5"><span>機略Ⅰ（5%）</span></label>
+                <label class="choice"><input type="radio" name="kiryaku" value="8"><span>機略Ⅱ（8%）</span></label>
+                <label class="choice"><input type="radio" name="kiryaku" value="15"><span>機略Ⅲ（15%）</span></label>
+              </div>
+            </section>
+
+            <section class="field">
+              <div class="field-header"><h4 class="field-title">速攻</h4></div>
+              <div class="choice-list">
+                <label class="choice"><input type="radio" name="sokkou" value="0" checked><span>なし</span></label>
+                <label class="choice"><input type="radio" name="sokkou" value="3"><span>速攻Ⅰ（3%）</span></label>
+                <label class="choice"><input type="radio" name="sokkou" value="6"><span>速攻Ⅱ（6%）</span></label>
+                <label class="choice"><input type="radio" name="sokkou" value="10"><span>速攻Ⅲ（10%）</span></label>
+              </div>
+            </section>
+
+            <section class="field field-full">
+              <div class="field-header"><h4 class="field-title">技能その他（複数可）</h4></div>
+              <div class="choice-list compact">
+                <label class="choice"><input type="checkbox" data-key="shinsan" value="20"><span>神算（20%）</span></label>
+                <label class="choice"><input type="checkbox" data-key="kanpa" value="10"><span>看破（10%）</span></label>
+                <label class="choice"><input type="checkbox" data-key="jinsoku" value="10"><span>迅速（10%）</span></label>
+                <label class="choice"><input type="checkbox" data-key="sairyaku" value="10"><span>才略（10%）</span></label>
+                <label class="choice"><input type="checkbox" data-key="reiken" value="15"><span>霊剣（15%）</span></label>
+                <label class="choice"><input type="checkbox" data-key="ichinen" value="10"><span>一念（10%）</span></label>
+                <label class="choice"><input type="checkbox" data-key="buretsu" value="10"><span>武烈（10%）</span></label>
+                <label class="choice"><input type="checkbox" data-key="fubu" value="5"><span>布武（5%）</span></label>
+                <label class="choice"><input type="checkbox" data-key="kanata" value="10"><span>彼方（UR☆7、10%）</span></label>
+                <label class="choice"><input type="checkbox" data-key="kenbatsu" value="10"><span>剣抜（10%）</span></label>
+                <label class="choice"><input type="checkbox" data-key="sensokukashin" value="10"><span>戦速加進（☆4薩摩筒、10%）</span></label>
+              </div>
+            </section>
+
+            <section class="field field--positive">
+              <div class="field-header"><h4 class="field-title">戦法速度増加（状態強化）</h4></div>
+              <div class="choice-list">
+                <label class="choice"><input type="radio" name="statusUp" value="0" checked><span>なし</span></label>
+                <label class="choice"><input type="radio" name="statusUp" value="10"><span>10%</span></label>
+                <label class="choice"><input type="radio" name="statusUp" value="20"><span>20%</span></label>
+              </div>
+            </section>
+
+            <section class="field field--danger">
+              <div class="field-header"><h4 class="field-title">戦法速度減少（状態弱化）</h4></div>
+              <div class="choice-list">
+                <label class="choice"><input type="radio" name="statusDown" value="0" checked><span>なし</span></label>
+                <label class="choice"><input type="radio" name="statusDown" value="-10"><span>10%</span></label>
+                <label class="choice"><input type="radio" name="statusDown" value="-15"><span>15%</span></label>
+                <label class="choice"><input type="radio" name="statusDown" value="-20"><span>20%</span></label>
+              </div>
+            </section>
+
+            <section class="field field-full">
+              <div class="field-header">
+                <h4 class="field-title">戦法速度増加/減少持続時間</h4>
+                <span class="field-hint">秒</span>
+              </div>
+              <div class="slider-wrap">
+                <div class="slider-meta"><span class="slider-output"><span data-range-output="statusDuration">0</span>秒</span></div>
+                <input id="statusDuration" type="range" min="0" max="20" step="1" value="0">
+              </div>
+            </section>
+          </div>
+        </div>
+
+        <div class="group">
+          <div class="group-header">
+            <h3 class="group-title">ゲージ増加系</h3>
+            <p class="group-note">ゲージ加算で基本間隔をどこまで縮めるかを調整します。</p>
+          </div>
+          <div class="field-grid">
+            <section class="field">
+              <div class="field-header"><h4 class="field-title">忘我</h4></div>
+              <div class="choice-list">
+                <label class="choice"><input type="radio" name="bouga" value="0" checked><span>なし</span></label>
+                <label class="choice"><input type="radio" name="bouga" value="20"><span>あり（20%）</span></label>
+              </div>
+            </section>
+
+            <section class="field">
+              <div class="field-header"><h4 class="field-title">金剛</h4></div>
+              <div class="choice-list">
+                <label class="choice"><input type="radio" name="kongo" value="0" checked><span>なし</span></label>
+                <label class="choice"><input type="radio" name="kongo" value="3"><span>金剛3%*1回（3%）</span></label>
+                <label class="choice"><input type="radio" name="kongo" value="9"><span>金剛3%*3回（9%）</span></label>
+                <label class="choice"><input type="radio" name="kongo" value="15"><span>金剛3%*5回（15%）</span></label>
+              </div>
+            </section>
+
+            <section class="field">
+              <div class="field-header"><h4 class="field-title">虎威（大将配置）…適性S武将人数</h4></div>
+              <div class="choice-list">
+                <label class="choice"><input type="radio" name="boiTaisho" value="0" checked><span>なし</span></label>
+                <label class="choice"><input type="radio" name="boiTaisho" value="3"><span>1人（3%）</span></label>
+                <label class="choice"><input type="radio" name="boiTaisho" value="6"><span>2人（6%）</span></label>
+                <label class="choice"><input type="radio" name="boiTaisho" value="9"><span>3人（9%）</span></label>
+                <label class="choice"><input type="radio" name="boiTaisho" value="12"><span>4人（12%）</span></label>
+                <label class="choice"><input type="radio" name="boiTaisho" value="15"><span>5人（15%）</span></label>
+                <label class="choice"><input type="radio" name="boiTaisho" value="18"><span>6人（18%）</span></label>
+                <label class="choice"><input type="radio" name="boiTaisho" value="21"><span>7人（21%）</span></label>
+              </div>
+            </section>
+
+            <section class="field">
+              <div class="field-header"><h4 class="field-title">虎威（副将与力配置）…適性S武将人数</h4></div>
+              <div class="choice-list">
+                <label class="choice"><input type="radio" name="boiFukusho" value="0" checked><span>なし</span></label>
+                <label class="choice"><input type="radio" name="boiFukusho" value="1"><span>1人（1%）</span></label>
+                <label class="choice"><input type="radio" name="boiFukusho" value="2"><span>2人（2%）</span></label>
+                <label class="choice"><input type="radio" name="boiFukusho" value="3"><span>3人（3%）</span></label>
+                <label class="choice"><input type="radio" name="boiFukusho" value="4"><span>4人（4%）</span></label>
+                <label class="choice"><input type="radio" name="boiFukusho" value="5"><span>5人（5%）</span></label>
+                <label class="choice"><input type="radio" name="boiFukusho" value="6"><span>6人（6%）</span></label>
+                <label class="choice"><input type="radio" name="boiFukusho" value="7"><span>7人（7%）</span></label>
+              </div>
+            </section>
+
+            <section class="field">
+              <div class="field-header"><h4 class="field-title">建築練兵・戦法</h4></div>
+              <div class="choice-list">
+                <label class="choice"><input type="radio" name="building" value="0" checked><span>なし</span></label>
+                <label class="choice"><input type="radio" name="building" value="10"><span>Lv1（10%）</span></label>
+                <label class="choice"><input type="radio" name="building" value="15"><span>Lv2（15%）</span></label>
+                <label class="choice"><input type="radio" name="building" value="20"><span>Lv3（20%）</span></label>
+              </div>
+            </section>
+
+            <section class="field">
+              <div class="field-header"><h4 class="field-title">神気</h4></div>
+              <div class="choice-list">
+                <label class="choice"><input type="radio" name="shinki" value="0" checked><span>なし</span></label>
+                <label class="choice"><input type="radio" name="shinki" value="20"><span>あり（20%）</span></label>
+              </div>
+            </section>
+          </div>
+        </div>
+      </section>
+
+      <aside class="side-panel">
+        <section class="panel-surface side-card side-card--presets">
+          <div class="side-header">
+            <p class="section-kicker">Quick Access</p>
+            <h3 class="side-title">プリセット</h3>
+          </div>
+          <div class="preset-grid">
+            <button type="button" class="preset-button" data-preset="default">初期状態</button>
+            <button type="button" class="preset-button" data-preset="fast25">25秒最速寄せ</button>
+            <button type="button" class="preset-button" data-preset="balanced30">30秒バランス</button>
+            <button type="button" class="preset-button" data-preset="debuff35">35秒デバフ検証</button>
+          </div>
+        </section>
+
+        <section class="panel-surface side-card">
+          <div class="side-header">
+            <p class="section-kicker">Share</p>
+            <h3 class="side-title">共有URL</h3>
+          </div>
+          <p class="note">現在の入力状態をURLに保持して、そのまま共有できます。</p>
+          <button type="button" class="share-button" id="copyUrlButton">URLをコピー</button>
+          <div class="share-url" id="shareUrlText"></div>
+        </section>
+
+        <section class="panel-surface side-card side-card--analysis">
+          <div class="side-header">
+            <p class="section-kicker">Analysis</p>
+            <h3 class="side-title">計算根拠</h3>
+          </div>
+
+          <div class="analysis-summary">
+            <div class="sidebar-item"><span>合計ゲージ加算</span><strong id="sidebarGauge">0%</strong></div>
+            <div class="sidebar-item"><span>常時速度補正</span><strong id="sidebarSpeed">0%</strong></div>
+            <div class="sidebar-item"><span>状態変化補正</span><strong id="sidebarStatus">0%</strong></div>
+          </div>
+
+          <div class="formula-box" id="formulaText"></div>
+
+          <div class="breakdown-list">
+            <div class="breakdown-item"><span>ゲージ短縮後の基準時間</span><strong id="remainingGaugeTime">0.00秒</strong></div>
+            <div class="breakdown-item"><span>状態変化が効く区間</span><strong id="buffedSegment">0.00秒</strong></div>
+            <div class="breakdown-item"><span>常時速度倍率</span><strong id="baseMultiplier">1.00x</strong></div>
+            <div class="breakdown-item"><span>状態変化込み倍率</span><strong id="statusMultiplier">1.00x</strong></div>
+          </div>
+
+          <div class="equation-steps">
+            <p id="equationStep1">step1</p>
+            <p id="equationStep2">step2</p>
+            <p id="equationStep3">step3</p>
+          </div>
+
+          <p class="footer-note">
+            小数表示は2桁固定。抽出元の式に合わせて、100%超の合計もそのまま計算しています。
+          </p>
+        </section>
+      </aside>
+    </section>
+
+    <section class="cases-panel panel-surface">
+      <div class="panel-heading panel-heading--cases">
+        <div>
+          <p class="section-kicker">Reference Cases</p>
+          <h2 class="section-title">テストケース一覧</h2>
+        </div>
+        <p class="note">ケースごとの結果を確認しながら、ワンタップで入力へ反映できます。</p>
+      </div>
+      <div class="cases-table-wrap">
+        <table class="cases-table">
+          <thead>
+            <tr>
+              <th>ケース</th>
+              <th>概要</th>
+              <th>結果</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="testCaseTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <p class="site-copyright">©超絶ブラック</p>
+  </main>
+
+  <script src="./script.js"></script>
+</body>
+</html>

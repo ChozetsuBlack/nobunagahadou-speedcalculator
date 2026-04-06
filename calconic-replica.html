@@ -1,0 +1,550 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>戦法スピード計算機 再現版</title>
+  <style>
+    :root {
+      --bg: #f3efe7;
+      --panel: rgba(255, 255, 255, 0.92);
+      --panel-strong: #fffdf8;
+      --ink: #1f2937;
+      --muted: #6b7280;
+      --line: #e5dccf;
+      --accent: #b2412e;
+      --accent-soft: #f6d8cf;
+      --shadow: 0 24px 80px rgba(67, 40, 24, 0.12);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(178, 65, 46, 0.14), transparent 28%),
+        radial-gradient(circle at right 10% top 15%, rgba(120, 142, 97, 0.12), transparent 24%),
+        linear-gradient(180deg, #f7f3ec 0%, #efe6da 100%);
+      min-height: 100vh;
+    }
+    main {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 32px 0 56px;
+    }
+    .hero {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 24px;
+      align-items: stretch;
+      margin-bottom: 24px;
+    }
+    .hero-card, .panel {
+      background: var(--panel);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.65);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .hero-card { padding: 28px; }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: #f8ede7;
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+    h1 {
+      margin: 16px 0 10px;
+      font-size: clamp(2rem, 4vw, 3.4rem);
+      line-height: 1.05;
+    }
+    .hero p, .note {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+    .result-card {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background: linear-gradient(180deg, rgba(178, 65, 46, 0.98), rgba(116, 32, 24, 0.98)), var(--panel);
+      color: #fff;
+    }
+    .result-label {
+      font-size: 14px;
+      font-weight: 700;
+      opacity: 0.9;
+      letter-spacing: 0.04em;
+    }
+    .result-value {
+      margin: 12px 0 8px;
+      font-size: clamp(2.2rem, 6vw, 4rem);
+      font-weight: 800;
+      line-height: 1;
+    }
+    .result-meta {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 24px;
+    }
+    .stat {
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.12);
+    }
+    .stat strong {
+      display: block;
+      margin-top: 6px;
+      font-size: 1.15rem;
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 330px;
+      gap: 24px;
+    }
+    .panel { padding: 24px; }
+    .group + .group {
+      margin-top: 24px;
+      padding-top: 24px;
+      border-top: 1px solid var(--line);
+    }
+    .group-title {
+      margin: 0 0 12px;
+      font-size: 1.15rem;
+    }
+    .field-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+    .field, .field-full {
+      background: var(--panel-strong);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 16px;
+    }
+    .field-full { grid-column: 1 / -1; }
+    .field-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: baseline;
+      margin-bottom: 12px;
+    }
+    .field-title {
+      margin: 0;
+      font-size: 0.98rem;
+      font-weight: 700;
+    }
+    .field-hint {
+      color: var(--muted);
+      font-size: 0.86rem;
+      white-space: nowrap;
+    }
+    .slider-wrap {
+      display: grid;
+      gap: 10px;
+    }
+    .slider-output {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--accent);
+    }
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+    }
+    .choice-list {
+      display: grid;
+      gap: 10px;
+    }
+    .choice-list.compact {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .choice { position: relative; }
+    .choice input {
+      position: absolute;
+      opacity: 0;
+      inset: 0;
+    }
+    .choice span {
+      display: block;
+      width: 100%;
+      padding: 11px 12px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: white;
+      transition: 160ms ease;
+      font-size: 0.94rem;
+      line-height: 1.45;
+      cursor: pointer;
+    }
+    .choice input:checked + span {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      box-shadow: inset 0 0 0 1px rgba(178, 65, 46, 0.16);
+    }
+    .sidebar-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .sidebar-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: #fff;
+      border: 1px solid var(--line);
+      font-size: 0.92rem;
+    }
+    .formula-box {
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 16px;
+      background: #fff;
+      border: 1px dashed #d2b9af;
+      color: #4b5563;
+      font-size: 0.88rem;
+      line-height: 1.7;
+      word-break: break-word;
+    }
+    .footer-note {
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: 0.86rem;
+      line-height: 1.7;
+    }
+    @media (max-width: 980px) {
+      .hero, .layout { grid-template-columns: 1fr; }
+      .field-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px) {
+      main {
+        width: min(100% - 20px, 1180px);
+        padding-top: 18px;
+      }
+      .hero-card, .panel, .result-card { padding: 18px; }
+      .choice-list.compact, .result-meta { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="hero">
+      <article class="hero-card">
+        <div class="eyebrow">Independent Replica</div>
+        <h1>戦法スピード計算機</h1>
+        <p>
+          公開ページから確認できた入力定義と数式をもとに、独立動作する形で再構成した再現版です。
+          入力変更時に即時計算され、表示は小数第2位固定です。
+        </p>
+      </article>
+
+      <aside class="hero-card result-card">
+        <div>
+          <div class="result-label">発動時間</div>
+          <div class="result-value"><span id="resultValue">0.00</span> 秒</div>
+          <p class="note" style="color: rgba(255,255,255,0.82);">
+            抽出した式を分解して実装しています。負の値も元式どおりそのまま表示します。
+          </p>
+        </div>
+
+        <div class="result-meta">
+          <div class="stat">合計ゲージ加算<strong id="gaugeTotal">0%</strong></div>
+          <div class="stat">常時速度補正<strong id="speedTotal">0%</strong></div>
+          <div class="stat">状態変化補正<strong id="statusTotal">0%</strong></div>
+          <div class="stat">基本戦法間隔<strong id="intervalValue">0秒</strong></div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="layout">
+      <section class="panel">
+        <div class="group">
+          <h2 class="group-title">■ 基本情報</h2>
+          <div class="field-grid">
+            <div class="field">
+              <div class="field-header">
+                <h3 class="field-title">勇士…母衣兵科レベル（上限30%）</h3>
+                <span class="field-hint">%</span>
+              </div>
+              <div class="slider-wrap">
+                <div class="slider-output"><span data-range-output="baseGauge">0</span>%</div>
+                <input id="baseGauge" type="range" min="0" max="30" step="1" value="0">
+              </div>
+            </div>
+
+            <div class="field">
+              <div class="field-header">
+                <h3 class="field-title">戦法発動間隔</h3>
+                <span class="field-hint">秒</span>
+              </div>
+              <div class="choice-list">
+                <label class="choice"><input type="radio" name="interval" value="35"><span>35秒</span></label>
+                <label class="choice"><input type="radio" name="interval" value="30"><span>30秒</span></label>
+                <label class="choice"><input type="radio" name="interval" value="25"><span>25秒</span></label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="group">
+          <h2 class="group-title">■ 発動速度増加系</h2>
+          <div class="field-grid">
+            <div class="field">
+              <div class="field-header"><h3 class="field-title">機略</h3></div>
+              <div class="choice-list">
+                <label class="choice"><input type="radio" name="kiryaku" value="0" checked><span>なし</span></label>
+                <label class="choice"><input type="radio" name="kiryaku" value="5"><span>機略Ⅰ（5%）</span></label>
+                <label class="choice"><input type="radio" name="kiryaku" value="8"><span>機略Ⅱ（8%）</span></label>
+                <label class="choice"><input type="radio" name="kiryaku" value="15"><span>機略Ⅲ（15%）</span></label>
+              </div>
+            </div>
+
+            <div class="field">
+              <div class="field-header"><h3 class="field-title">速攻</h3></div>
+              <div class="choice-list">
+                <label class="choice"><input type="radio" name="sokkou" value="0" checked><span>なし</span></label>
+                <label class="choice"><input type="radio" name="sokkou" value="3"><span>速攻Ⅰ（3%）</span></label>
+                <label class="choice"><input type="radio" name="sokkou" value="6"><span>速攻Ⅱ（6%）</span></label>
+                <label class="choice"><input type="radio" name="sokkou" value="10"><span>速攻Ⅲ（10%）</span></label>
+              </div>
+            </div>
+
+            <div class="field-full">
+              <div class="field-header"><h3 class="field-title">技能その他（複数可）</h3></div>
+              <div class="choice-list compact">
+                <label class="choice"><input type="checkbox" data-key="shinsan" value="20"><span>神算（20%）</span></label>
+                <label class="choice"><input type="checkbox" data-key="kanpa" value="10"><span>看破（10%）</span></label>
+                <label class="choice"><input type="checkbox" data-key="jinsoku" value="10"><span>迅速（10%）</span></label>
+                <label class="choice"><input type="checkbox" data-key="sairyaku" value="10"><span>才略（10%）</span></label>
+                <label class="choice"><input type="checkbox" data-key="reiken" value="15"><span>霊剣（15%）</span></label>
+                <label class="choice"><input type="checkbox" data-key="ichinen" value="10"><span>一念（10%）</span></label>
+                <label class="choice"><input type="checkbox" data-key="buretsu" value="10"><span>武烈（10%）</span></label>
+                <label class="choice"><input type="checkbox" data-key="fubu" value="5"><span>布武（5%）</span></label>
+                <label class="choice"><input type="checkbox" data-key="kanata" value="10"><span>彼方（UR☆7、10%）</span></label>
+                <label class="choice"><input type="checkbox" data-key="kenbatsu" value="10"><span>剣抜（10%）</span></label>
+                <label class="choice"><input type="checkbox" data-key="sensokukashin" value="10"><span>戦速加進（☆4薩摩筒、10%）</span></label>
+              </div>
+            </div>
+
+            <div class="field">
+              <div class="field-header"><h3 class="field-title">戦法速度増加（状態強化）</h3></div>
+              <div class="choice-list">
+                <label class="choice"><input type="radio" name="statusUp" value="0" checked><span>なし</span></label>
+                <label class="choice"><input type="radio" name="statusUp" value="10"><span>10%</span></label>
+                <label class="choice"><input type="radio" name="statusUp" value="20"><span>20%</span></label>
+              </div>
+            </div>
+
+            <div class="field">
+              <div class="field-header"><h3 class="field-title">戦法速度減少（状態弱化）</h3></div>
+              <div class="choice-list">
+                <label class="choice"><input type="radio" name="statusDown" value="0" checked><span>なし</span></label>
+                <label class="choice"><input type="radio" name="statusDown" value="-10"><span>10%</span></label>
+                <label class="choice"><input type="radio" name="statusDown" value="-15"><span>15%</span></label>
+                <label class="choice"><input type="radio" name="statusDown" value="-20"><span>20%</span></label>
+              </div>
+            </div>
+
+            <div class="field-full">
+              <div class="field-header">
+                <h3 class="field-title">戦法速度増加/減少持続時間</h3>
+                <span class="field-hint">秒</span>
+              </div>
+              <div class="slider-wrap">
+                <div class="slider-output"><span data-range-output="statusDuration">0</span>秒</div>
+                <input id="statusDuration" type="range" min="0" max="20" step="1" value="0">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="group">
+          <h2 class="group-title">■ ゲージ増加系</h2>
+          <div class="field-grid">
+            <div class="field">
+              <div class="field-header"><h3 class="field-title">忘我</h3></div>
+              <div class="choice-list">
+                <label class="choice"><input type="radio" name="bouga" value="0" checked><span>なし</span></label>
+                <label class="choice"><input type="radio" name="bouga" value="20"><span>あり（20%）</span></label>
+              </div>
+            </div>
+
+            <div class="field">
+              <div class="field-header"><h3 class="field-title">金剛</h3></div>
+              <div class="choice-list">
+                <label class="choice"><input type="radio" name="kongo" value="0" checked><span>なし</span></label>
+                <label class="choice"><input type="radio" name="kongo" value="3"><span>金剛3%*1回（3%）</span></label>
+                <label class="choice"><input type="radio" name="kongo" value="9"><span>金剛3%*3回（9%）</span></label>
+                <label class="choice"><input type="radio" name="kongo" value="15"><span>金剛3%*5回（15%）</span></label>
+              </div>
+            </div>
+
+            <div class="field">
+              <div class="field-header"><h3 class="field-title">虎威（大将配置）…適性S武将人数</h3></div>
+              <div class="choice-list">
+                <label class="choice"><input type="radio" name="boiTaisho" value="0" checked><span>なし</span></label>
+                <label class="choice"><input type="radio" name="boiTaisho" value="3"><span>1人（3%）</span></label>
+                <label class="choice"><input type="radio" name="boiTaisho" value="6"><span>2人（6%）</span></label>
+                <label class="choice"><input type="radio" name="boiTaisho" value="9"><span>3人（9%）</span></label>
+                <label class="choice"><input type="radio" name="boiTaisho" value="12"><span>4人（12%）</span></label>
+                <label class="choice"><input type="radio" name="boiTaisho" value="15"><span>5人（15%）</span></label>
+                <label class="choice"><input type="radio" name="boiTaisho" value="18"><span>6人（18%）</span></label>
+                <label class="choice"><input type="radio" name="boiTaisho" value="21"><span>7人（21%）</span></label>
+              </div>
+            </div>
+
+            <div class="field">
+              <div class="field-header"><h3 class="field-title">虎威（副将与力配置）…適性S武将人数</h3></div>
+              <div class="choice-list">
+                <label class="choice"><input type="radio" name="boiFukusho" value="0" checked><span>なし</span></label>
+                <label class="choice"><input type="radio" name="boiFukusho" value="1"><span>1人（1%）</span></label>
+                <label class="choice"><input type="radio" name="boiFukusho" value="2"><span>2人（2%）</span></label>
+                <label class="choice"><input type="radio" name="boiFukusho" value="3"><span>3人（3%）</span></label>
+                <label class="choice"><input type="radio" name="boiFukusho" value="4"><span>4人（4%）</span></label>
+                <label class="choice"><input type="radio" name="boiFukusho" value="5"><span>5人（5%）</span></label>
+                <label class="choice"><input type="radio" name="boiFukusho" value="6"><span>6人（6%）</span></label>
+                <label class="choice"><input type="radio" name="boiFukusho" value="7"><span>7人（7%）</span></label>
+              </div>
+            </div>
+
+            <div class="field">
+              <div class="field-header"><h3 class="field-title">建築練兵・戦法</h3></div>
+              <div class="choice-list">
+                <label class="choice"><input type="radio" name="building" value="0" checked><span>なし</span></label>
+                <label class="choice"><input type="radio" name="building" value="10"><span>Lv1（10%）</span></label>
+                <label class="choice"><input type="radio" name="building" value="15"><span>Lv2（15%）</span></label>
+                <label class="choice"><input type="radio" name="building" value="20"><span>Lv3（20%）</span></label>
+              </div>
+            </div>
+
+            <div class="field">
+              <div class="field-header"><h3 class="field-title">神気</h3></div>
+              <div class="choice-list">
+                <label class="choice"><input type="radio" name="shinki" value="0" checked><span>なし</span></label>
+                <label class="choice"><input type="radio" name="shinki" value="20"><span>あり（20%）</span></label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="panel">
+        <h2 class="group-title">ロジック要約</h2>
+        <p class="note">
+          発動時間は「基本間隔からゲージ増加ぶんを先に短縮」し、その後に「持続時間つきの状態変化」を反映する式です。
+        </p>
+        <div class="sidebar-list">
+          <div class="sidebar-item"><span>合計ゲージ加算</span><strong id="sidebarGauge">0%</strong></div>
+          <div class="sidebar-item"><span>常時速度補正</span><strong id="sidebarSpeed">0%</strong></div>
+          <div class="sidebar-item"><span>状態変化補正</span><strong id="sidebarStatus">0%</strong></div>
+        </div>
+        <div class="formula-box" id="formulaText"></div>
+        <p class="footer-note">
+          実装メモ: 小数表示は2桁固定。合計が100%を超えるケースでも、抽出式どおりクランプせずそのまま計算します。
+        </p>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    const state = {
+      baseGauge: 0,
+      interval: 0,
+      kiryaku: 0,
+      shinsan: 0,
+      kanpa: 0,
+      jinsoku: 0,
+      sairyaku: 0,
+      reiken: 0,
+      ichinen: 0,
+      buretsu: 0,
+      fubu: 0,
+      kanata: 0,
+      sokkou: 0,
+      kenbatsu: 0,
+      sensokukashin: 0,
+      statusUp: 0,
+      statusDown: 0,
+      statusDuration: 0,
+      bouga: 0,
+      kongo: 0,
+      boiTaisho: 0,
+      boiFukusho: 0,
+      building: 0,
+      shinki: 0
+    };
+
+    const formulaText = "((interval*(100-(baseGauge+boiTaisho+boiFukusho+kongo+bouga+building+shinki))/100)-(statusDuration*(100+baseSpeed+statusSpeed)/100))/((100+baseSpeed)/100)+statusDuration";
+
+    function getRadioValue(name) {
+      const checked = document.querySelector(`input[name="${name}"]:checked`);
+      return checked ? Number(checked.value) : 0;
+    }
+
+    function getCheckboxValue(key) {
+      const input = document.querySelector(`input[data-key="${key}"]`);
+      return input && input.checked ? Number(input.value) : 0;
+    }
+
+    function updateState() {
+      state.baseGauge = Number(document.getElementById("baseGauge").value);
+      state.statusDuration = Number(document.getElementById("statusDuration").value);
+
+      ["interval", "kiryaku", "sokkou", "statusUp", "statusDown", "bouga", "kongo", "boiTaisho", "boiFukusho", "building", "shinki"].forEach((key) => {
+        state[key] = getRadioValue(key);
+      });
+
+      ["shinsan", "kanpa", "jinsoku", "sairyaku", "reiken", "ichinen", "buretsu", "fubu", "kanata", "kenbatsu", "sensokukashin"].forEach((key) => {
+        state[key] = getCheckboxValue(key);
+      });
+    }
+
+    function calculateActivationTime() {
+      const gaugeTotal = state.baseGauge + state.boiTaisho + state.boiFukusho + state.kongo + state.bouga + state.building + state.shinki;
+      const baseSpeedTotal = state.kiryaku + state.shinsan + state.kanpa + state.jinsoku + state.sairyaku + state.reiken + state.ichinen + state.buretsu + state.fubu + state.kanata + state.sokkou + state.kenbatsu + state.sensokukashin;
+      const statusSpeedTotal = state.statusUp + state.statusDown;
+      const remainingGaugeTime = state.interval * (100 - gaugeTotal) / 100;
+      const buffedSegment = state.statusDuration * (100 + baseSpeedTotal + statusSpeedTotal) / 100;
+      const result = (remainingGaugeTime - buffedSegment) / ((100 + baseSpeedTotal) / 100) + state.statusDuration;
+      return { result, gaugeTotal, baseSpeedTotal, statusSpeedTotal };
+    }
+
+    function render() {
+      updateState();
+      const { result, gaugeTotal, baseSpeedTotal, statusSpeedTotal } = calculateActivationTime();
+      document.querySelector('[data-range-output="baseGauge"]').textContent = String(state.baseGauge);
+      document.querySelector('[data-range-output="statusDuration"]').textContent = String(state.statusDuration);
+      document.getElementById("resultValue").textContent = Number.isFinite(result) ? result.toFixed(2) : "0.00";
+      document.getElementById("gaugeTotal").textContent = `${gaugeTotal}%`;
+      document.getElementById("speedTotal").textContent = `${baseSpeedTotal}%`;
+      document.getElementById("statusTotal").textContent = `${statusSpeedTotal}%`;
+      document.getElementById("intervalValue").textContent = `${state.interval}秒`;
+      document.getElementById("sidebarGauge").textContent = `${gaugeTotal}%`;
+      document.getElementById("sidebarSpeed").textContent = `${baseSpeedTotal}%`;
+      document.getElementById("sidebarStatus").textContent = `${statusSpeedTotal}%`;
+      document.getElementById("formulaText").textContent = formulaText;
+    }
+
+    document.querySelectorAll("input").forEach((input) => {
+      input.addEventListener("input", render);
+      input.addEventListener("change", render);
+    });
+
+    render();
+  </script>
+</body>
+</html>
