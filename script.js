@@ -195,13 +195,13 @@ function renderTestCases() {
 }
 
 function updateResultTone(statusSpeedTotal) {
-  const card = document.getElementById("resultCard");
-  card.classList.remove("state-boost", "state-debuff");
+  const dock = document.getElementById("resultDock");
+  dock.classList.remove("state-boost", "state-debuff");
 
   if (statusSpeedTotal > 0) {
-    card.classList.add("state-boost");
+    dock.classList.add("state-boost");
   } else if (statusSpeedTotal < 0) {
-    card.classList.add("state-debuff");
+    dock.classList.add("state-debuff");
   }
 }
 
@@ -222,15 +222,7 @@ function render() {
   document.querySelector('[data-range-output="baseGauge"]').textContent = String(state.baseGauge);
   document.querySelector('[data-range-output="statusDuration"]').textContent = String(state.statusDuration);
 
-  document.getElementById("resultValue").textContent = Number.isFinite(result) ? result.toFixed(2) : "0.00";
   document.getElementById("resultDockValue").textContent = Number.isFinite(result) ? result.toFixed(2) : "0.00";
-  document.getElementById("gaugeTotal").textContent = `${gaugeTotal}%`;
-  document.getElementById("resultDockGauge").textContent = `${gaugeTotal}%`;
-  document.getElementById("speedTotal").textContent = `${baseSpeedTotal}%`;
-  document.getElementById("resultDockSpeed").textContent = `${baseSpeedTotal}%`;
-  document.getElementById("statusTotal").textContent = `${statusSpeedTotal}%`;
-  document.getElementById("resultDockStatus").textContent = `${statusSpeedTotal}%`;
-  document.getElementById("intervalValue").textContent = `${state.interval}秒`;
 
   document.getElementById("sidebarGauge").textContent = `${gaugeTotal}%`;
   document.getElementById("sidebarSpeed").textContent = `${baseSpeedTotal}%`;

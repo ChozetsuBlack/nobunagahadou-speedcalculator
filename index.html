@@ -7,28 +7,13 @@
   <link rel="stylesheet" href="./style.css">
 </head>
 <body>
-  <div class="result-dock panel-surface" id="resultDock" aria-live="polite">
-    <div class="result-dock__main">
-      <p class="result-dock__label">発動時間</p>
-      <div class="result-dock__value"><span id="resultDockValue">0.00</span><small>秒</small></div>
-    </div>
-    <div class="result-dock__meta">
-      <div class="result-dock__metric">
-        <span>ゲージ</span>
-        <strong id="resultDockGauge">0%</strong>
-      </div>
-      <div class="result-dock__metric">
-        <span>常時速度</span>
-        <strong id="resultDockSpeed">0%</strong>
-      </div>
-      <div class="result-dock__metric">
-        <span>状態変化</span>
-        <strong id="resultDockStatus">0%</strong>
-      </div>
-    </div>
-  </div>
-
   <main class="app-shell">
+    <div class="result-dock" id="resultDock" aria-live="polite">
+      <p class="result-dock__label">Final Trigger Time</p>
+      <div class="result-dock__value"><span id="resultDockValue">0.00</span><small>秒</small></div>
+      <p class="result-dock__hint">設定を変えても、今の発動時間がこのまま見えます。</p>
+    </div>
+
     <section class="hero">
       <article class="hero-copy panel-surface">
         <p class="eyebrow">TACTICAL SPEED ANALYZER</p>
@@ -42,42 +27,6 @@
           <span>テストケース反映</span>
         </div>
       </article>
-
-      <aside class="result-card panel-surface" id="resultCard">
-        <div class="result-head">
-          <div>
-            <p class="result-kicker">Final Trigger Time</p>
-            <h2 class="result-title">発動時間</h2>
-          </div>
-          <span class="result-chip">LIVE</span>
-        </div>
-
-        <div class="result-mainline">
-          <div class="result-value"><span id="resultValue">0.00</span><small>秒</small></div>
-          <p class="result-caption">
-            現在の入力条件から算出した最終到達時間です。
-          </p>
-        </div>
-
-        <div class="result-metrics">
-          <div class="metric-card">
-            <span>合計ゲージ加算</span>
-            <strong id="gaugeTotal">0%</strong>
-          </div>
-          <div class="metric-card">
-            <span>常時速度補正</span>
-            <strong id="speedTotal">0%</strong>
-          </div>
-          <div class="metric-card metric-card--conditional">
-            <span>状態変化補正</span>
-            <strong id="statusTotal">0%</strong>
-          </div>
-          <div class="metric-card">
-            <span>基本戦法間隔</span>
-            <strong id="intervalValue">0秒</strong>
-          </div>
-        </div>
-      </aside>
     </section>
 
     <section class="layout">
